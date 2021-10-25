@@ -1,9 +1,12 @@
+#!/opt/anaconda3/bin/python
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import tkinter as tk
 import os
 import sys
+sys.path.append('/Users/edwardmcdugald/mypy/2021_10_01/my_files/')
+#sys.path.append('c:\maetutil\pythutil')
 import utils
 # import msvcrt
 import time

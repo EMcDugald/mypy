@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from scipy.fftpack import dst, dct
+from scipy.fftpack import dst
 
 def t6hat(rmax,rmin,x):
 
@@ -100,12 +100,4 @@ def mydst2(input):
 
     return output
 
-def get_bks(fft_mat,a):
-    k1_ind = np.shape(fft_mat)[0]
-    k2_ind = np.shape(fft_mat)[1]
-    U = np.zeros(shape=(k1_ind,k2_ind))
-    for k1 in range(1,k1_ind+1):
-        for k2 in range(1,k2_ind+1):
-            U[k1-1,k2-1] = -fft_mat[k1-1,k2-1]/((k1**2+k2**2)*(-np.pi/a)**2)
-    return U
 
