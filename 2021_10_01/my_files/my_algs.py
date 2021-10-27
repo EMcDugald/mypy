@@ -127,6 +127,61 @@ def mat_inv(A):
     return A_inv
 
 
+# Complex analogues
+
+
+def back_subs_c(R,b):
+    x = np.zeros(np.shape(b),dtype=np.cdouble)
+    n = np.shape(b)[0]
+    for i in range(n-1,-1,-1):
+        B = b[i].astype(np.cdouble)
+        for j in range(n-1,i,-1):
+            B -= (R[i,j]*x[j])
+        x[i] = B/R[i,i]
+    return x
+
+
+def gauss_pp_c(A,b):
+    col_ct = np.shape(A)[0]
+    for i in range(1,col_ct+1):
+        pi = get_permute_c(A[:,i-1],i-1)
+        b = np.matmul(pi,b)
+        pai = np.matmul(pi,np.copy(A))
+        li = get_row_op_c(pai[:,i-1],i)
+        b = np.matmul(li,b)
+        A = np.matmul(li,pai)
+    return A, b
+
+
+def get_permute_c(v,col_num):
+    p = np.identity(len(v),dtype=np.cdouble)
+    ind_of_max = np.argmax(np.abs(v[col_num:]))+col_num
+    p[[ind_of_max,col_num]] = p[[col_num,ind_of_max]]
+    return p
+
+
+def get_row_op_c(v,col_num):
+    l = np.identity(len(v),dtype=np.cdouble)
+    for j in range(col_num,len(v)):
+        l[j,col_num-1] = -v[j]/v[col_num-1]
+    return l
+
+
+def solve_gpp_c(A,b):
+    U, b = gauss_pp_c(A,b)
+    x = back_subs_c(U,b)
+    return x
+
+
+def mat_inv_c(A):
+    col_ct = np.shape(A)[0]
+    A_inv = np.zeros(shape=(col_ct, col_ct),dtype=np.cdouble)
+    for j in range(0,col_ct):
+        ej = np.eye(1, col_ct, j).conj().T
+        A_inv[0:,j] = solve_gpp_c(np.copy(A),ej).conj().T
+    return A_inv
+
+
 # EIGENVALUE/EIGENVECTOR SOLVERS
 
 
@@ -185,5 +240,45 @@ def QR_it_shift_mu(A,its):
 
 
 # NONLINEAR SOLVERS
+
+
+
+# when i used this initially, i defined grad and f as lambda functions...
+def newt_raph_2d(x,y,grad,f):
+    g = grad(x,y)
+    f = f(x,y)
+    return np.array([[x,y]]).T - \
+    np.matmul(mat_inv_c(g),f)
+
+
+def newt_raph_it_2d(max_its,init,tol,gradf,f):
+    k=0
+    while k <= max_its:
+        x = init[0][0]
+        y = init[0][1]
+        if np.all(np.abs(f(x,y))<tol):
+            print("iterations stopped at k=",k)
+            print("final value=",init)
+            print("f(x,y)=",f(x,y))
+            return np.array([[x,y]])
+        else:
+            init = newt_raph_2d(x,y,gradf,f).T
+            k +=1
+    print("max iterations not reached")
+    print("final point",init)
+
+#example usage
+# x0 = -1. + 1.j
+# y0 = 0. + 0.j
+# init = np.array([[x0,y0]])
+#
+# f = lambda x, y: \
+#     np.array([[y-x**2,x*y-1]]).T
+#
+# grad = lambda x, y: \
+#     np.array([[-2*x,1],[y,x]]).T
+#
+# newt_raph_it(20,init,1e-8,grad,f)
+
 
 
