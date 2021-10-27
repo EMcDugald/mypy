@@ -280,5 +280,31 @@ def newt_raph_it_2d(max_its,init,tol,gradf,f):
 #
 # newt_raph_it(20,init,1e-8,grad,f)
 
+#bisection
+
+
+def bisect_1d(f,xl,xr,tol,max_its):
+    for i in range(0,max_its):
+        if f(xl)*f(xr) < 0:
+            x0 = (xl+xr)/2
+            if np.abs(f(x0))<tol:
+                print("*******************")
+                print("its stopped at k=",i)
+                print(x0)
+                print(f(x0))
+                return x0
+            elif f(xl)*f(x0) < 0:
+                xl = xl
+                xr = x0
+            elif f(xr)*f(x0) < 0:
+                xl = x0
+                xr = xr
+            else:
+                print("found nothing")
+                return None
+    print("max its reached, tolerance not achieved")
+    print(x0)
+    print(f(x0))
+
 
 
