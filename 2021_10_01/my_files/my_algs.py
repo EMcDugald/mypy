@@ -267,6 +267,27 @@ def newt_raph_it_2d(max_its,init,tol,gradf,f):
     print("max iterations not reached")
     print("final point",init)
 
+def newt_raph_1d(x,grad,f):
+    g = grad(x)
+    f = f(x)
+    return x - f/g
+
+
+def newt_raph_it_1d(max_its,init,tol,gradf,f):
+    k=0
+    while k <= max_its:
+        x = init
+        if np.abs(f(x)) < tol:
+            print("iterations stopped at k=",k)
+            print("final value=",init)
+            print("f(x,y)=",f(x))
+            return x
+        else:
+            init = newt_raph_1d(x,gradf,f)
+            k +=1
+    print("max iterations not reached")
+    print("final point",init)
+
 #example usage
 # x0 = -1. + 1.j
 # y0 = 0. + 0.j
@@ -306,5 +327,15 @@ def bisect_1d(f,xl,xr,tol,max_its):
     print(x0)
     print(f(x0))
 
+
+def func_it_1d(x0,f,max_its,tol):
+    for i in range(0,max_its):
+        x0 = f(x0)
+        if np.abs(f(x0)-x0)<tol:
+            print('tol reached in {} iterates'.format(i))
+            print(x0)
+            return x0
+    print("iterates not terminated")
+    return x0
 
 
