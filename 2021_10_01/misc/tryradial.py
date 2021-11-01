@@ -1,5 +1,7 @@
 import utils
 import numpy as np
+import sys
+sys.path.append('/Users/edwardmcdugald/mypy/2021_10_01/misc/')
 import mymathradial as myrad
 
 rmax = 0.5

@@ -1,7 +1,7 @@
 import numpy as np
-import sys
-sys.path.append('/Users/edwardmcdugald/mypy/2021_10_01/my_files/')
-#sys.path.append('c:\maetutil\pythutil')
+# import sys
+# sys.path.append('/Users/edwardmcdugald/mypy/2021_10_01/my_files/')
+# #sys.path.append('c:\maetutil\pythutil')
 import mymath
 
 #solves for coefficients in fourier transform
