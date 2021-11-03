@@ -1,7 +1,4 @@
 import numpy as np
-# import sys
-# sys.path.append('/Users/edwardmcdugald/mypy/2021_10_01/my_files/')
-# #sys.path.append('c:\maetutil\pythutil')
 import mymath
 
 #solves for coefficients in fourier transform
@@ -16,19 +13,15 @@ def get_bks(fft_mat):
     return U
 
 
-def impose_zero_bc(func):
-    func[0:, 0] = 0
-    func[np.shape(func)[0] - 1, 0:] = 0
-    func[0, 0:] = 0
-    func[0:, np.shape(func)[0] - 1] = 0
-    return func
-
 #returns un-normalized solution from laplacian
-def return_u(lap):
+#in_dim = inout dimensions- defines normalization
+def return_u(lap,in_dim):
+    norm_x1 = (in_dim[0][1]-in_dim[0][0])/np.pi
+    norm_x2 = (in_dim[1][1]-in_dim[1][0])/np.pi
     # get coefficients of dft of laplacian u
     ak_mat = mymath.mydst2(np.copy(lap))
     # solve for the coefficients of u in frequency domain
     bk_mat = get_bks(np.copy(ak_mat))
     # apply the dft to get the time/space domain values of u
     u = mymath.mydst2(np.copy(bk_mat))
-    return u
+    return u*norm_x1*norm_x2
