@@ -25,3 +25,37 @@ def return_u(lap,in_dim):
     # apply the dft to get the time/space domain values of u
     u = mymath.mydst2(np.copy(bk_mat))
     return u*norm_x1*norm_x2
+
+
+############# WIP ###############
+
+
+def zeta(x1,x2,rmin,rmax):
+    return mymath.t6hat(rmax,rmin,x1)*mymath.t6hat(rmax,rmin,x2)
+
+
+def chi(x1, x2, rmin):
+    t1 = np.abs(x1) < rmin
+    t2 = np.abs(x2) < rmin
+    t3 = np.logical_and(t1, t2)
+    p = np.where(t3 == True, 0, 1)
+    return p
+
+
+def laplacian(dx, dy, w):
+    laplacian_xy = np.zeros(w.shape)
+    for y in range(w.shape[1]-1):
+        laplacian_xy[:, y] = (1/dy)**2 * ( w[:, y+1] - 2*w[:, y] + w[:, y-1] )
+    for x in range(w.shape[0]-1):
+        laplacian_xy[x, :] = laplacian_xy[x, :] + (1/dx)**2 * ( w[x+1,:] - 2*w[x,:] + w[x-1,:] )
+    return laplacian_xy
+
+
+def phi(x1,x2):
+    norm = np.sqrt(x1**2+x2**2)
+    return np.log(norm)/(2*np.pi)
+
+
+def G(u,x1,x2,rmin,rmax,dx,dy):
+    w = u*zeta(x1,x2,rmin,rmax)
+    return laplacian(dx,dy,w)
