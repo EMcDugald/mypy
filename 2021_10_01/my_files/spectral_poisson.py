@@ -15,16 +15,18 @@ def get_bks(fft_mat):
 
 #returns un-normalized solution from laplacian
 #in_dim = inout dimensions- defines normalization
-def return_u(lap,in_dim):
-    norm_x1 = (in_dim[0][1]-in_dim[0][0])/np.pi
-    norm_x2 = (in_dim[1][1]-in_dim[1][0])/np.pi
+def return_u(lap,sq_len):
+    #normalization for inverse dst
+    norm = (sq_len/np.pi)**2
     # get coefficients of dft of laplacian u
-    ak_mat = mymath.mydst2(np.copy(lap))
+    ak_mat = mymath.mydst2(lap)
+
     # solve for the coefficients of u in frequency domain
-    bk_mat = get_bks(np.copy(ak_mat))
+    bk_mat = get_bks(ak_mat)
+
     # apply the dft to get the time/space domain values of u
-    u = mymath.mydst2(np.copy(bk_mat))
-    return u*norm_x1*norm_x2
+    u = mymath.mydst2(bk_mat)
+    return u*norm
 
 
 ############# WIP ###############
