@@ -32,10 +32,11 @@ def return_u(lap,sq_len):
 ############# WIP ###############
 
 
+#smooth transition function
 def zeta(x1,x2,rmin,rmax):
     return mymath.t6hat(rmax,rmin,x1)*mymath.t6hat(rmax,rmin,x2)
 
-
+#step function
 def chi(x1, x2, rmin):
     t1 = np.abs(x1) < rmin
     t2 = np.abs(x2) < rmin
@@ -43,7 +44,7 @@ def chi(x1, x2, rmin):
     p = np.where(t3 == True, 0, 1)
     return p
 
-
+#finite difference approx to laplacian
 def laplacian(dx, dy, w):
     laplacian_xy = np.zeros(w.shape)
     for y in range(w.shape[1]-1):
@@ -52,12 +53,31 @@ def laplacian(dx, dy, w):
         laplacian_xy[x, :] = laplacian_xy[x, :] + (1/dx)**2 * ( w[x+1,:] - 2*w[x,:] + w[x-1,:] )
     return laplacian_xy
 
-
+#fundametnal solution- small shift in arg to bypass division by zero
 def phi(x1,x2):
     norm = np.sqrt(x1**2+x2**2)
-    return np.log(norm)/(2*np.pi)
+    return np.log(norm+10e-50)/(2*np.pi)
 
-
-def G(u,x1,x2,rmin,rmax,dx,dy):
+# returns laplacian of u*zeta
+def G(u,x1,x2,rmin,rmax):
+    dx = x1[0][1]-x1[0][0]
     w = u*zeta(x1,x2,rmin,rmax)
-    return laplacian(dx,dy,w)
+    return laplacian(dx,dx,w)
+
+# returns convolution xG*phi
+def convol(rmin,rmax,X1,X2,u):
+    x1_dim = np.shape(X1)[0]
+    x2_dim = np.shape(X2)[0]
+    conv_arr = np.zeros((x1_dim,x2_dim))
+    dx = X1[0][1]-X1[0][0]
+    f = chi(X1,X2,rmin)*G(u,X1,X2,rmin,rmax)
+    for i in range(1,x1_dim):
+        for j in range(1,x2_dim):
+            g = phi(X1[i,j]-X1,X2[i,j]-X2)
+            conv_arr[i,j] = np.sum(f*g)*dx**2
+    return conv_arr
+
+# returns solution v= u x zeta - (XG*phi)
+def v(X1,X2,rmin,rmax,u):
+    xgp = convol(rmin,rmax,X1,X2,u)
+    return u*zeta(X1,X2,rmin,rmax) - xgp
