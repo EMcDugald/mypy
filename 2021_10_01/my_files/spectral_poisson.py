@@ -12,6 +12,15 @@ def get_bks(fft_mat):
             U[k1,k2] = -fft_mat[k1,k2]/((k1)**2+(k2)**2)
     return U
 
+def get_bks_lap(fft_mat):
+    k1_ind = np.shape(fft_mat)[0]
+    k2_ind = np.shape(fft_mat)[1]
+    U = np.zeros(shape=(k1_ind,k2_ind))
+    for k1 in range(1,k1_ind):
+        for k2 in range(1,k2_ind):
+            U[k1,k2] = -fft_mat[k1,k2]*((k1)**2+(k2)**2)
+    return U
+
 
 #returns un-normalized solution from laplacian
 #in_dim = inout dimensions- defines normalization
@@ -28,6 +37,20 @@ def return_u(lap,sq_len):
     u = mymath.mydst2(bk_mat)
     return u*norm
 
+#in_dim = inout dimensions- defines normalization
+def return_lapu(u,sq_len):
+    #normalization for inverse dst
+    norm = (sq_len/np.pi)**2
+    # get coefficients of dft of laplacian u
+    ak_mat = mymath.mydst2(u)
+
+    # solve for the coefficients of u in frequency domain
+    bk_mat = get_bks_lap(ak_mat)
+
+    # apply the dft to get the time/space domain values of u
+    u = mymath.mydst2(bk_mat)
+    return u/norm
+
 
 ############# WIP ###############
 
@@ -38,8 +61,8 @@ def zeta(x1,x2,rmin,rmax):
 
 #step function
 def chi(x1, x2, rmin):
-    t1 = np.abs(x1) < rmin
-    t2 = np.abs(x2) < rmin
+    t1 = np.abs(x1) <= rmin
+    t2 = np.abs(x2) <= rmin
     t3 = np.logical_and(t1, t2)
     p = np.where(t3 == True, 0, 1)
     return p
@@ -53,18 +76,21 @@ def laplacian(dx, dy, w):
         laplacian_xy[x, :] = laplacian_xy[x, :] + (1/dx)**2 * ( w[x+1,:] - 2*w[x,:] + w[x-1,:] )
     return laplacian_xy
 
+
 #fundametnal solution- small shift in arg to bypass division by zero
 def phi(x1,x2):
     norm = np.sqrt(x1**2+x2**2)
     return np.log(norm+10e-50)/(2*np.pi)
 
-# returns laplacian of u*zeta
-def G(u,x1,x2,rmin,rmax):
-    dx = x1[0][1]-x1[0][0]
-    w = u*zeta(x1,x2,rmin,rmax)
-    return laplacian(dx,dx,w)
 
-# returns convolution xG*phi
+
+def G(u,x1,x2,rmin,rmax):
+    sq_len = np.abs(np.max(x1[0])-np.min(x1[0]))
+    w = u*zeta(x1,x2,rmin,rmax)
+    return return_lapu(w,sq_len)
+
+
+# returns convolution xG*phi on big square
 def convol(rmin,rmax,X1,X2,u):
     x1_dim = np.shape(X1)[0]
     x2_dim = np.shape(X2)[0]
@@ -77,7 +103,8 @@ def convol(rmin,rmax,X1,X2,u):
             conv_arr[i,j] = np.sum(f*g)*dx**2
     return conv_arr
 
-# returns solution v= u x zeta - (XG*phi)
+
 def v(X1,X2,rmin,rmax,u):
     xgp = convol(rmin,rmax,X1,X2,u)
     return u*zeta(X1,X2,rmin,rmax) - xgp
+
