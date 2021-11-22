@@ -9,7 +9,7 @@ import numpy as np
 # [-halfsize,halfsize] x [-halfsize,halfsize]
 #------------------------------------------------------------------------
 def radial(ndim,rcx,rcy,rmax,rmin,halfsize):
-   step = 2.0*halfsize/ndim
+   step = 2.0*halfsize/(ndim-1)
 
    func   = np.zeros((ndim,ndim))
    exlap  = np.zeros((ndim,ndim))
