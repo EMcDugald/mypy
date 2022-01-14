@@ -1,5 +1,6 @@
 import numpy as np
 import mymath
+from scipy import signal
 
 #solves for coefficients in fourier transform
 # see https://en.wikipedia.org/wiki/Spectral_method for an example
@@ -90,8 +91,8 @@ def G(u,x1,x2,rmin,rmax):
     return return_lapu(w,sq_len)
 
 
-# returns convolution xG*phi on big square
-def convol(rmin,rmax,X1,X2,u):
+# returns convolution xG*phi on big square- based on quadrature
+def convol_quad(rmin,rmax,X1,X2,u):
     x1_dim = np.shape(X1)[0]
     x2_dim = np.shape(X2)[0]
     conv_arr = np.zeros((x1_dim,x2_dim))
@@ -103,6 +104,26 @@ def convol(rmin,rmax,X1,X2,u):
             conv_arr[i,j] = np.sum(f*g)*dx**2
     return conv_arr
 
+
+def v_quad(X1,X2,rmin,rmax,u):
+    xgp = convol_quad(rmin,rmax,X1,X2,u)
+    return u*zeta(X1,X2,rmin,rmax) - xgp
+
+# returns convolution xG*phi on big square- based on FFT
+def convol(rmin,rmax,X1,X2,u):
+    ker = chi(X1,X2,rmin)*G(u,X1,X2,rmin,rmax)
+    k_start = X1[0][0]
+    k_end = -k_start
+    k_size = np.shape(X1)[0]
+    im_start = int(2*k_start)
+    im_end = int(2*k_end)
+    im_len = int(2*k_size-1)
+    im_sp = np.linspace(im_start,im_end,im_len)
+    IM1, IM2 = np.meshgrid(im_sp,im_sp)
+    im = phi(IM1,IM2)
+    conv = signal.fftconvolve(im,ker,mode='valid')
+    dx = X1[0][1]-X1[0][0]
+    return conv*dx**2
 
 def v(X1,X2,rmin,rmax,u):
     xgp = convol(rmin,rmax,X1,X2,u)
