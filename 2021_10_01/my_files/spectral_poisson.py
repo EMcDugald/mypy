@@ -1,6 +1,7 @@
 import numpy as np
 import mymath
 from scipy import signal
+import scipy as sp
 
 #solves for coefficients in fourier transform
 # see https://en.wikipedia.org/wiki/Spectral_method for an example
@@ -127,5 +128,50 @@ def convol(rmin,rmax,X1,X2,u):
 
 def v(X1,X2,rmin,rmax,u):
     xgp = convol(rmin,rmax,X1,X2,u)
+    return u*zeta(X1,X2,rmin,rmax) - xgp
+
+
+# returns convolution xG*phi on big square- based on FFT
+# does not rely on scipy method
+def convol2(rmin,rmax,X1,X2,u):
+    # set scaling for continuous conversion
+    dx = X1[0][1] - X1[0][0]
+    # get kernel on [-a,a]^2
+    ker = chi(X1, X2, rmin) * G(u, X1, X2, rmin, rmax)
+    # make meshgrid on [-2a,2a]^2
+    k_start = X1[0][0]
+    k_end = -k_start
+    k_size = np.shape(X1)[0]
+    im_start = 2 * k_start
+    im_end = 2 * k_end
+    im_len = 2 * k_size - 1
+    im_sp = np.linspace(im_start, im_end, im_len)
+    IM1, IM2 = np.meshgrid(im_sp, im_sp)
+    # het image on [-2a,2a]^2
+    im = phi(IM1, IM2)
+    # shape of kernel
+    m1, m2 = np.shape(ker)
+    # shape of image
+    n1, n2 = np.shape(im)
+    # total size of lienar convolution
+    num_rows = m1 + n1 - 1
+    num_cols = m2 + n2 - 1
+    k_pad = np.zeros((num_rows, num_cols))
+    i_pad = np.zeros((num_rows, num_cols))
+    # place kernel in center of pad
+    k_row_st = round((num_rows - m1) / 2)
+    k_col_st = round((num_cols - m2) / 2)
+    i_row_st = round((num_rows - n1) / 2)
+    i_col_st = round((num_cols - n2) / 2)
+    k_pad[k_row_st:k_row_st + m1, k_col_st:k_col_st + m2] = ker
+    i_pad[i_row_st:i_row_st + n1, i_col_st:i_col_st + n2] = im
+    #take inverse fft of product of ffts
+    conv = sp.fft.ifft2(sp.fft.fft2(sp.fft.fftshift(k_pad)) * sp.fft.fft2(i_pad))
+    #extract middle of array of size kernel
+    conv = np.real(conv)[k_row_st-1:2*k_row_st, k_col_st-1:2*k_col_st]
+    return conv * dx ** 2
+
+def v2(X1,X2,rmin,rmax,u):
+    xgp = convol2(rmin,rmax,X1,X2,u)
     return u*zeta(X1,X2,rmin,rmax) - xgp
 
