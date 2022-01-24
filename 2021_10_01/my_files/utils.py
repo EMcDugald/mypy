@@ -1,8 +1,7 @@
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.colors import ListedColormap
-
 
 def readd(fid):
     with open(fid,'rb') as f:
@@ -17,6 +16,22 @@ def readd(fid):
         k = int(np.sqrt(np.size(fdata)))
         fdata = np.reshape(fdata,[k, k])
     return fdata
+
+def ndread(fid):
+    with open(fid,'rb') as f:
+        bdata = f.read()
+    fdata = np.frombuffer(bdata, dtype='f')
+    if bdata[0:4] == b'ndnd':
+        ncol = int(bdata[4:8])
+        nrow = int(bdata[8:12])
+        fdata = np.reshape(fdata,[nrow+1,ncol])
+        fdata = fdata[1:,:]
+    else:
+        k = int(np.sqrt(np.size(fdata)))
+        fdata = np.reshape(fdata,[k, k])
+        ncol = k
+        nrow = k
+    return fdata, nrow, ncol
 
 def ndwrite(inp,fid):
     inp = np.array(inp, dtype='f')
